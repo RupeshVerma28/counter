@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Counter App</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#111827" />
+    <meta
+      name="description"
+      content="A modern counter app that counts up to 108 and tracks completions."
+    />
+    <link rel="manifest" id="manifest" />
+    <link rel="icon" id="favicon" />
+
+    <style>
+      /* Simple pre-loader to avoid flash of unstyled content */
+      body.loading #root {
+        display: none;
+      }
+      .loader {
+        display: none;
+      }
+      body.loading .loader {
+        display: block;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 8px solid #374151; /* gray-700 */
+        border-top: 8px solid #4f46e5; /* indigo-600 */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-gray-900 to-black loading">
+    <!-- This root div is where our React app will be mounted -->
+    <div id="root"></div>
+    <div class="loader"></div>
+
+    <!-- React and Babel from CDN -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Our React application code -->
+    <script type="text/babel">
+      const App = () => {
+        const { useState, useEffect } = React;
+        // State for the main counter (0-108)
+        const [count, setCount] = useState(0);
+
+        // State for session completions
+        const [completedCounts, setCompletedCounts] = useState(0);
+
+        // State for total completions, loaded from localStorage
+        const [totalCounts, setTotalCounts] = useState(() => {
+          try {
+            const savedTotal = localStorage.getItem("totalCounterCounts");
+            return savedTotal ? parseInt(savedTotal, 10) : 0;
+          } catch (error) {
+            console.error(
+              "Could not parse total counts from localStorage",
+              error
+            );
+            return 0;
+          }
+        });
+
+        // Effect to handle the counter reaching its limit
+        useEffect(() => {
+          if (count === 109) {
+            // Increment session and total completions
+            setCompletedCounts((prev) => prev + 1);
+            setTotalCounts((prev) => prev + 1);
+            // Reset the main counter
+            setCount(0);
+          }
+        }, [count]);
+
+        // Effect to save the total count to localStorage whenever it changes
+        useEffect(() => {
+          try {
+            localStorage.setItem("totalCounterCounts", totalCounts.toString());
+          } catch (error) {
+            console.error("Could not save total counts to localStorage", error);
+          }
+        }, [totalCounts]);
+
+        // Handler to increment the counter
+        const handleIncrement = () => {
+          if (count <= 108) {
+            setCount((prevCount) => prevCount + 1);
+          }
+        };
+
+        // Handler to reset the main counter
+        const handleReset = () => {
+          setCount(0);
+        };
+
+        return (
+          <div className="min-h-screen text-white flex flex-col items-center justify-center p-4 font-sans">
+            <div className="w-full max-w-md mx-auto">
+              {/* Main Counter Display */}
+              <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 md:p-10 text-center shadow-2xl">
+                <p className="text-2xl text-gray-400 mb-4">Counter</p>
+                <h1 className="text-8xl md:text-9xl font-bold tracking-tighter">
+                  {count}
+                </h1>
+              </div>
+
+              {/* Stats Panels */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-center shadow-lg">
+                  <p className="text-gray-400 text-sm md:text-base">
+                    You completed
+                  </p>
+                  <p className="text-2xl md:text-3xl font-semibold">
+                    {completedCounts}{" "}
+                    <span className="text-base font-normal">count(s)</span>
+                  </p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-center shadow-lg">
+                  <p className="text-gray-400 text-sm md:text-base">
+                    All-Time Total
+                  </p>
+                  <div>
+                    <p className="text-2xl md:text-3xl font-semibold">
+                      {new Intl.NumberFormat().format(totalCounts * 108)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-8 grid grid-cols-2 gap-4">
+                <button
+                  onClick={handleIncrement}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                >
+                  Count +
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-xl text-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            <footer className="text-center mt-12 text-gray-500 text-sm">
+              <p>&copy; 2025 All Rights Reserved.</p>
+            </footer>
+          </div>
+        );
+      };
+
+      // Mount the React app
+      const container = document.getElementById("root");
+      const root = ReactDOM.createRoot(container);
+      root.render(<App />);
+    </script>
+
+    <!-- PWA Setup: Manifest and Service Worker -->
+    <script>
+      // Dynamically create the manifest file and link it.
+      // This makes the app self-contained in one HTML file.
+      const createIcon = (size) => {
+        const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 192 192">
+                  <circle cx="96" cy="96" r="90" fill="#1f2937"/>
+                  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="60" fill="#ffffff" font-weight="bold">108</text>
+                </svg>`;
+        return `data:image/svg+xml;base64,${btoa(svg)}`;
+      };
+
+      // Set Favicon
+      document.querySelector("#favicon").setAttribute("href", createIcon(32));
+
+      const manifest = {
+        name: "Modern Counter App",
+        short_name: "Counter",
+        start_url: ".",
+        display: "standalone",
+        background_color: "#111827",
+        theme_color: "#111827",
+        description: "A modern counter app that counts to 108.",
+        icons: [
+          { src: createIcon(192), sizes: "192x192", type: "image/svg+xml" },
+          { src: createIcon(512), sizes: "512x512", type: "image/svg+xml" },
+        ],
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], {
+        type: "application/json",
+      });
+      const manifestURL = URL.createObjectURL(manifestBlob);
+      document.querySelector("#manifest").setAttribute("href", manifestURL);
+
+      // --- Service Worker Logic ---
+      // A service worker enables offline functionality.
+      if ("serviceWorker" in navigator) {
+        const swCode = `
+                const CACHE_NAME = 'counter-app-cache-v1';
+                // Cache the main page itself. External CDN scripts are usually cached by the browser effectively.
+                const urlsToCache = ['/'];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME).then(cache => {
+                            return cache.addAll(urlsToCache);
+                        })
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    // We only handle navigation requests for the main document.
+                    if (event.request.mode === 'navigate') {
+                        event.respondWith(
+                            fetch(event.request).catch(() => caches.match(event.request))
+                        );
+                    }
+                });
+            `;
+
+        const swBlob = new Blob([swCode], { type: "application/javascript" });
+        const swURL = URL.createObjectURL(swBlob);
+
+        window.addEventListener("load", () => {
+          document.body.classList.remove("loading");
+          navigator.serviceWorker
+            .register(swURL)
+            .then((registration) => {
+              console.log(
+                "ServiceWorker registration successful with scope: ",
+                registration.scope
+              );
+            })
+            .catch((err) => {
+              console.log("ServiceWorker registration failed: ", err);
+            });
+        });
+      } else {
+        window.addEventListener("load", () => {
+          document.body.classList.remove("loading");
+        });
+      }
+    </script>
+  </body>
+</html>
