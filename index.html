@@ -19,14 +19,12 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
-        /* Add padding to the bottom of the body to prevent footer overlap */
         body {
             padding-bottom: 50px; 
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 to-black loading">
-    <!-- This root div is where our React app will be mounted -->
     <div id="root"></div>
 
     <!-- React and Babel from CDN -->
@@ -34,9 +32,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Our React application code -->
     <script type="text/babel">
-        // A reusable component for the display panels
         const InfoPanel = ({ title, value, onReset }) => (
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-center shadow-lg flex flex-col justify-between">
                 <div>
@@ -67,7 +63,6 @@
             }
           });
 
-          // Main counter logic
           useEffect(() => {
             if (count >= 109) {
               setCompletedCounts(prev => prev + 1);
@@ -76,7 +71,6 @@
             }
           }, [count]);
 
-          // Save total counts to localStorage
           useEffect(() => {
             try {
                 localStorage.setItem('totalCounterCounts', totalCounts.toString());
@@ -85,137 +79,36 @@
             }
           }, [totalCounts]);
 
-          // --- Handlers ---
-          const handleIncrement = () => setCount(prevCount => prevCount + 1);
-          
-          // Reset handlers for each panel
-          const handleResetMain = () => setCount(0);
-          const handleResetSession = () => setCompletedCounts(0);
-          const handleResetTotal = () => {
-              setTotalCounts(0);
-              // Also clear from storage
-              try {
-                  localStorage.removeItem('totalCounterCounts');
-              } catch (error) {
-                   console.error("Could not remove total counts from localStorage", error);
-              }
+          const resetCurrent = () => setCount(0);
+          const resetCompleted = () => setCompletedCounts(0);
+          const resetTotal = () => {
+            setTotalCounts(0);
+            localStorage.removeItem('totalCounterCounts');
           };
 
           return (
-            <div className="min-h-screen text-white flex flex-col items-center justify-between p-4 font-sans">
-              
-              {/* Top Section: Display Panels */}
-              <div className="w-full max-w-lg mx-auto">
-                {/* Main Counter Display */}
-                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 md:p-10 text-center shadow-2xl relative flex items-center justify-center h-48 md:h-56">
-                  <h1 className="text-8xl sm:text-9xl font-bold tracking-tighter leading-none">
-                    {count}
-                  </h1>
-                   <button 
-                        onClick={handleResetMain}
-                        className="absolute bottom-4 right-4 bg-gray-700/50 hover:bg-gray-600/50 text-white/70 font-bold py-1 px-3 rounded-md text-xs transition-colors duration-300"
-                    >
-                        Reset
-                    </button>
-                </div>
-
-                {/* Stats Panels */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <InfoPanel 
-                    title="You completed" 
-                    value={`${completedCounts} count(s)`}
-                    onReset={handleResetSession} 
-                  />
-                  <InfoPanel 
-                    title="All-Time Total" 
-                    value={new Intl.NumberFormat().format(totalCounts * 108)} 
-                    onReset={handleResetTotal} 
-                  />
-                </div>
+            <div className="min-h-screen flex flex-col items-center justify-center text-white px-4">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">Modern Counter</h1>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+                <InfoPanel title="Current Count" value={count} onReset={resetCurrent} />
+                <InfoPanel title="Completed Rounds" value={completedCounts} onReset={resetCompleted} />
+                <InfoPanel title="Total Rounds" value={totalCounts} onReset={resetTotal} />
               </div>
-
-              {/* Bottom Section: 3D Circular Count Button */}
-              <div className="my-8">
-                  <button
-                    onClick={handleIncrement}
-                    className="w-36 h-36 md:w-44 md:h-44 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold uppercase transition-all duration-150 ease-in-out border-b-8 border-purple-800 hover:border-purple-700 active:border-b-2 active:translate-y-1"
-                  >
-                    Count
-                  </button>
-              </div>
-              
-              {/* Sticky Footer */}
-              <footer className="fixed bottom-0 left-0 right-0 p-2 text-center text-xs text-gray-500 bg-black/20 backdrop-blur-sm">
-                All Right Reserved, Designed By Rupesh Verma
-              </footer>
-
+              <button 
+                onClick={() => setCount(prev => prev + 1)}
+                className="mt-8 bg-indigo-600 hover:bg-indigo-500 text-white text-xl font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105"
+              >
+                + Increment
+              </button>
             </div>
           );
         };
 
-        // Mount the React app
-        const container = document.getElementById('root');
-        const root = ReactDOM.createRoot(container);
-        root.render(<App />);
-    </script>
-    
-    <!-- PWA Setup: Manifest and Service Worker -->
-    <script>
-        const createIcon = (size) => {
-            const svg = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 192 192">
-                  <circle cx="96" cy="96" r="90" fill="#1f2937"/>
-                  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="60" fill="#ffffff" font-weight="bold">108</text>
-                </svg>`;
-            return `data:image/svg+xml;base64,${btoa(svg)}`;
-        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
-        document.querySelector('#favicon').setAttribute('href', createIcon(32));
-
-        const manifest = {
-          name: "Modern Counter App",
-          short_name: "Counter",
-          start_url: ".",
-          display: "standalone",
-          background_color: "#111827",
-          theme_color: "#111827",
-          description: "A modern counter app that counts to 108.",
-          icons: [
-            { src: createIcon(192), sizes: "192x192", type: "image/svg+xml" },
-            { src: createIcon(512), sizes: "512x512", type: "image/svg+xml" },
-          ]
-        };
-        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-        const manifestURL = URL.createObjectURL(manifestBlob);
-        document.querySelector('#manifest').setAttribute('href', manifestURL);
-
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const CACHE_NAME = 'modern-counter-cache-v4';
-                const urlsToCache = ['/'];
-                self.addEventListener('install', event => {
-                    event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
-                });
-                self.addEventListener('fetch', event => {
-                    if (event.request.mode === 'navigate') {
-                        event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
-                    }
-                });
-            `;
-            const swBlob = new Blob([swCode], { type: 'application/javascript' });
-            const swURL = URL.createObjectURL(swBlob);
-            window.addEventListener('load', () => {
-                document.body.classList.remove('loading');
-                navigator.serviceWorker.register(swURL)
-                    .then(reg => console.log('SW registration successful'))
-                    .catch(err => console.log('SW registration failed', err));
-            });
-        } else {
-             window.addEventListener('load', () => {
-                document.body.classList.remove('loading');
-            });
-        }
+        window.addEventListener('load', () => {
+            document.body.classList.remove('loading');
+        });
     </script>
 </body>
 </html>
-
