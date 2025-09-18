@@ -38,13 +38,15 @@
     <script type="text/babel">
         // A reusable component for the display panels
         const InfoPanel = ({ title, value, onReset }) => (
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-center shadow-lg flex flex-col justify-between"> </div>
-            <p className="text-gray-400 text-sm md:text-base">{title}</p>
-            <p className="text-2xl md:text-3xl font-semibold my-2">{value}</p>
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-center shadow-lg flex flex-col justify-between">
+                <div>
+                    <p className="text-gray-400 text-sm md:text-base">{title}</p>
+                    <p className="text-2xl md:text-3xl font-semibold my-2">{value}</p>
                 </div>
                 <button 
                     onClick={onReset}
-                    className="mt-2 w-full bg-gray-700/50 hover:bg-gray-600/50 text-white/70 font-bold py-1 px-3 rounded-md text-xs transition-colors duration-300" >
+                    className="mt-2 w-full bg-gray-700/50 hover:bg-gray-600/50 text-white/70 font-bold py-1 px-3 rounded-md text-xs transition-colors duration-300"
+                >
                     Reset
                 </button>
             </div>
